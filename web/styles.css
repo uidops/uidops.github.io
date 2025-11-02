@@ -1,0 +1,264 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    background: #e9f1f5;
+    font-family: Roboto, Arial, sans-serif;
+    line-height: 1.6;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+#page {
+    max-width: 1500px;
+    width: 1900px;
+    margin: 20px auto;
+    max-height: 900px;
+    background: #ffffff;
+    border: 1px solid #d8e1e7;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px #0000001a;
+    padding: 16px 16px 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+#hero {
+    background: #0179b6;
+    color: #fff;
+    border-radius: 8px;
+    padding: 26px 24px 28px;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+#hero h1 {
+    font-size: 51px;
+    margin: 0 0 6px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+#hero .subtitle {
+    font-size: 27px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.layout {
+    display: flex;
+    gap: 18px;
+    flex: 1;
+    min-height: 0;
+    padding: 18px 0;
+}
+
+.layout > .side {
+    flex: 1 1 25%;
+    max-width: 25%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.layout > .content {
+    flex: 2 1 50%;
+    max-width: 50%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.card {
+    border: 1px solid #d8e1e7;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.side {
+    background: #e8ecef;
+}
+
+.side .block + .block {
+    margin-top: 18px;
+}
+
+.section-title {
+    margin: 0 0 8px;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.section-title::before {
+    content: "📌";
+    margin-right: 6px;
+    font-size: 23px;
+    transform: translateY(-1px);
+    filter: saturate(1.4);
+}
+
+ul.list {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.list.contact {
+    list-style: disc;
+}
+
+.list.contact li,
+.list.contact li em,
+.list.contact li a {
+    font-size: 20px;
+}
+
+.list li {
+    margin: 4px 0;
+}
+
+.list.nested {
+    list-style: circle;
+    padding-left: 22px;
+}
+
+.list li::marker {
+    color: #000;
+}
+
+.content h2 {
+    margin: 0 0 2px;
+    padding-top: 10px;
+    font-size: 31px;
+    margin-left: 18px;
+}
+
+.role {
+    font-size: 25px;
+    margin: 0 0 0 18px;
+    font-weight: 700;
+}
+
+article.job {
+    margin: 0;
+    padding: 0;
+}
+
+article.job h4.role {
+    margin: 0 0 0 18px;
+    line-height: 1.2;
+}
+
+article.job > p {
+    margin: 0 0 4px 18px;
+    line-height: 1.3;
+    font-size: 20px;
+}
+
+article.job ul.list {
+    margin: 0;
+    padding-left: 0;
+}
+
+article.job ul.list li {
+    margin: 2px 0;
+    line-height: 1.3;
+    padding-left: 17px;
+    font-size: 20px;
+}
+
+article.job ul.list.nested {
+    margin: 0 0 0 18px;
+    padding-left: 0;
+    list-style-type: circle;
+}
+
+article.job ul.list.nested li {
+    margin: 0 0 1px 15px;
+    padding-left: 8px;
+    line-height: 1.3;
+    font-size: 18px;
+}
+
+.table-wrap {
+    margin-top: 10px;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+table.edu {
+    width: 100%;
+    height: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #d8e1e7;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.edu thead th {
+    background: #00bcd4;
+    color: #fff;
+    font-weight: 700;
+    font-size: 22px;
+    padding: 12px 16px;
+    text-align: left;
+    border-right: 1px solid #ffffff40;
+}
+
+.edu thead th:last-child {
+    border-right: none;
+}
+
+.edu tbody td {
+    padding: 12px 16px;
+    border-right: 1px solid #d8e1e7;
+    border-top: 1px solid #d8e1e7;
+    font-size: 22px;
+}
+
+.edu tbody td:last-child {
+    border-right: none;
+}
+
+.right h3 {
+    margin: 0 0 8px;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.right ul.list,
+.right ul.list li {
+    font-size: 20px;
+}
+
+.muted {
+    margin: 0;
+    font-size: 20px;
+}
+
+footer.footer {
+    background: #e8ecef;
+    border: 1px solid #d8e1e7;
+    border-radius: 8px;
+    margin-top: 0;
+    padding: 10px 14px;
+    color: #5b7282;
+    text-align: center;
+    font-size: 18px;
+}
+
+a[href^="in/"] {
+    text-decoration: none;
+}
