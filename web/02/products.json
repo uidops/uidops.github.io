@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "name": "کتاب آموزش HTML",
+    "price": 600000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/ec71f1754b9196eeca6d6733d71fd254472e10b3_1609833744.jpg?x-oss-process=image/resize,m_lfit,h_900,w_900/format,webp/quality,q_90",
+    "description": "یک کتاب مقدماتی برای یادگیری HTML. شامل تمرین‌ها و مثال‌های عملی."
+  },
+  {
+    "id": 2,
+    "name": "قلم نوری",
+    "price": 7490000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/2c987d33818af8852d65c4156f7fd7b695664b6b_1735478590.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "قلم نوری با حساسیت بالا و مناسب طراحی دیجیتال."
+  },
+  {
+    "id": 3,
+    "name": "موس گیمینگ",
+    "price": 3900000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/5da5c528896d847e33d6910c1f8c99b8a0716a88_1754239117.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "موس حرفه‌ای با دقت بالا و نورپردازی RGB."
+  },
+  {
+    "id": 4,
+    "name": "کابل شارژ سریع",
+    "price": 890000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/1f6e7a0d4e463244031525f4476cff5565dba916_1700389330.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "کابل مقاوم و سریع برای شارژ انواع دستگاه‌ها."
+  },
+  {
+    "id": 5,
+    "name": "کیف لپ‌تاپ 15 اینچ",
+    "price": 289000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/713344ffff4e113a83cfa18745ebd14ccd8e1fc6_1683655612.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "کیف مقاوم و شیک مناسب لپ‌تاپ های 15 اینچی."
+  },
+  {
+    "id": 6,
+    "name": "عینک آفتابی",
+    "price": 159000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/9420a26a0b4abd3e7868429fa82ade6ed55aaa28_1650162475.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "عینک آفتابی با فریم سبک و گارانتی کیفیت."
+  },
+  {
+    "id": 7,
+    "name": "هدفون بلوتوث",
+    "price": 450000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/35f4844908db639f14fad966e34825c59ccc3938_1745760224.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "هدفون بی‌سیم با عمر باتری طولانی و نویز کنسلینگ."
+  },
+  {
+    "id": 8,
+    "name": "پاوربانک 20000",
+    "price": 2999000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/6261a903fb67caf6b8fe80760c28a9b8303e2444_1762269429.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "پاوربانک پرظرفیت با چند پورت خروجی."
+  },
+  {
+    "id": 9,
+    "name": "بند ساعت سیلیکونی",
+    "price": 70000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/d46897fc4dcc3c27204a4e35832be8bd3a5fa421_1669209078.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "بند سیلیکونی نرم مناسب برای فعالیت‌های روزمره."
+  },
+  {
+    "id": 10,
+    "name": "چراغ مطالعه USB",
+    "price": 3600000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/6ce78431183e5cf1f1857c9d35fc40fd82e9d7ef_1628581553.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "چراغ مطالعه با شدت نور قابل تنظیم و اتصال USB."
+  },
+  {
+    "id": 11,
+    "name": "استند موبایل",
+    "price": 89000,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/c8af0e0f424bee90a402fb5617f9fbccb6322670_1722104048.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "استند تاشو و سبک، مناسب برای تماشای ویدئو."
+  },
+  {
+    "id": 12,
+    "name": "کیف پول چرمی",
+    "price": 396800,
+    "image": "https://dkstatics-public.digikala.com/digikala-products/d1bc1c8e02ffe334a9bf6dccc12ceb68dfbc37d3_1729505448.jpg?x-oss-process=image/resize,m_lfit,h_800,w_800/format,webp/quality,q_90",
+    "description": "کیف پول چرمی دست‌دوز با چندین محفظه کارت."
+  }
+]

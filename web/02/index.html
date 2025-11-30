@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>فروشگاه</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="brand">
+      <h1>فروشگاه</h1></h1>
+    </div>
+  </header>
+
+  <main class="container" role="main">
+    <section class="products-panel" aria-labelledby="products-heading">
+      <h2 id="products-heading" class="visually-hidden">محصولات</h2>
+
+      <div class="controls">
+        <button id="prev-page" class="btn page-btn" type="button" aria-label="صفحه قبلی">« قبلی</button>
+        <div id="page-info" class="page-info" aria-live="polite">صفحه 1 از 1</div>
+        <button id="next-page" class="btn page-btn" type="button" aria-label="صفحه بعدی">بعدی »</button>
+      </div>
+
+      <ul id="products-list" class="products-grid" role="list" aria-live="polite"></ul>
+
+      <nav class="pagination" aria-label="ناوبری صفحات">
+        <button id="prev-page-bottom" class="btn page-btn" type="button" aria-label="صفحه قبلی (پایین)">« قبلی</button>
+        <span id="page-info-bottom" class="page-info">صفحه 1 از 1</span>
+        <button id="next-page-bottom" class="btn page-btn" type="button" aria-label="صفحه بعدی (پایین)">بعدی »</button>
+      </nav>
+    </section>
+
+    <aside class="cart-summary" aria-labelledby="cart-heading">
+      <h3 id="cart-heading">خلاصه سبد خرید</h3>
+      <div id="cart-contents" class="cart-contents">
+        <p class="empty">هیچ محصولی در سبد خرید وجود ندارد.</p>
+      </div>
+      <div class="cart-actions">
+        <div class="discount-section">
+          <input type="text" id="discount-code" placeholder="کد تخفیف (درصد)">
+          <button id="apply-discount" class="btn btn-ghost" type="button">اعمال تخفیف</button>
+        </div>
+        <button id="clear-cart" class="btn btn-ghost" type="button">پاک‌سازی سبد</button>
+      </div>
+    </aside>
+  </main>
+
+  <div id="product-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="modal-title">
+    <div class="modal-inner">
+      <button id="modal-close" class="modal-close" aria-label="بستن">✕</button>
+      <h4 id="modal-title"></h4>
+      <img id="modal-image" alt="" />
+      <p id="modal-desc"></p>
+      <p id="modal-price" class="modal-price"></p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite" role="status" aria-atomic="true" hidden></div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
