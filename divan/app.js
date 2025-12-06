@@ -38,7 +38,11 @@ function updateSendButton() {
 
 async function request(path, options = {}) {
   const resp = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+      ...(options.headers || {}),
+    },
     credentials: "same-origin",
     ...options,
   });
