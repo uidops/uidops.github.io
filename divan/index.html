@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>DIVAN Chat</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="chat-api-base" content="http://localhost:8000/api" />
+        <style>
+            :root {
+                color-scheme: dark;
+                font-family:
+                    "Inter",
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                --bg-900: #030915;
+                --bg-800: #071024;
+                --bg-700: #0c1933;
+                --bg-600: #102040;
+                --border: #152c46;
+                --text: #dfe8f3;
+                --muted: #8ea4c3;
+                --accent: #22d3ee;
+                --accent-2: #3b82f6;
+                --user-bg: #0d2f4a;
+                --assistant-bg: #0f2236;
+                --system-bg: #0f1728;
+            }
+
+            html,
+            body {
+                height: 100%;
+            }
+
+            html {
+                overflow: hidden;
+            }
+
+            body {
+                margin: 0;
+                height: 100vh;
+                background:
+                    radial-gradient(
+                        circle at 20% 20%,
+                        #0d1f38 0%,
+                        #081328 32%,
+                        #040914 70%
+                    ),
+                    #02060f;
+                color: var(--text);
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+                overflow: hidden; /* keep page fixed and let inner panels scroll */
+            }
+
+            header {
+                padding: 1.25rem 1.75rem;
+                border-bottom: 1px solid var(--border);
+                background: var(--bg-800);
+            }
+
+            header h1 {
+                margin: 0;
+                font-size: 1.5rem;
+            }
+
+            header p {
+                margin: 0.35rem 0 0;
+                color: var(--muted);
+            }
+
+            main {
+                flex: 1 1 0;
+                display: grid;
+                grid-template-columns: 280px 1fr;
+                gap: 1px;
+                background: var(--border);
+                min-height: 0; /* allow inner scroll areas to take over */
+                overflow: hidden;
+            }
+
+            aside,
+            section {
+                background: var(--bg-900);
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            aside {
+                border-right: 1px solid var(--border);
+            }
+
+            aside h2 {
+                margin: 1.5rem 1rem 0.5rem;
+                font-size: 0.9rem;
+                letter-spacing: 0.08em;
+                color: var(--muted);
+                text-transform: uppercase;
+            }
+
+            .history {
+                flex: 1;
+                overflow-y: auto;
+                padding-bottom: 1rem;
+            }
+
+            .conversation-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0 0.75rem;
+            }
+
+            .history button {
+                padding: 0.8rem;
+                border: 1px solid transparent;
+                border-radius: 10px;
+                background: var(--bg-600);
+                color: var(--text);
+                text-align: left;
+                font-size: 0.95rem;
+                cursor: pointer;
+                transition:
+                    border-color 0.15s ease,
+                    background 0.15s ease;
+            }
+
+            .history button.select {
+                flex: 1;
+            }
+
+            .history button.delete {
+                width: 42px;
+                min-width: 42px;
+                text-align: center;
+                padding: 0.65rem 0;
+                background: var(--bg-700);
+                color: var(--muted);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.12s ease;
+            }
+
+            .history button:hover,
+            .history button.is-active {
+                border-color: var(--accent);
+            }
+
+            .history button.delete:hover {
+                color: var(--accent);
+                border-color: var(--accent);
+            }
+
+            .conversation-item:hover .delete,
+            .conversation-item:focus-within .delete {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .chat-log {
+                flex: 1;
+                padding: 1.5rem;
+                overflow-y: auto;
+                min-height: 0;
+            }
+
+            .message {
+                max-width: 720px;
+                margin: 0 auto 1.25rem;
+                padding: 1rem 1.25rem;
+                border-radius: 16px;
+                line-height: 1.6;
+                font-size: 1rem;
+            }
+
+            .message.user {
+                background: var(--user-bg);
+                text-align: right;
+            }
+
+            .message.assistant {
+                background: var(--assistant-bg);
+                border: 1px solid var(--border);
+            }
+
+            .message.system {
+                background: var(--system-bg);
+                color: #cbd5f5;
+                font-size: 0.95rem;
+            }
+
+            .composer {
+                border-top: 1px solid var(--border);
+                padding: 1rem 1.5rem;
+                background: var(--bg-800);
+            }
+
+            form {
+                max-width: 780px;
+                margin: 0 auto;
+                display: flex;
+                gap: 0.75rem;
+            }
+
+            textarea {
+                flex: 1;
+                resize: none;
+                min-height: 70px;
+                border-radius: 14px;
+                border: 1px solid var(--border);
+                background: var(--bg-900);
+                color: var(--text);
+                padding: 0.9rem 1.1rem;
+                font-size: 1rem;
+            }
+
+            textarea:focus {
+                outline: 2px solid var(--accent);
+                border-color: var(--accent);
+                box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+            }
+
+            button.send {
+                border: none;
+                border-radius: 14px;
+                padding: 0 1.6rem;
+                background: linear-gradient(
+                    135deg,
+                    var(--accent),
+                    var(--accent-2)
+                );
+                color: #fff;
+                font-size: 1rem;
+                cursor: pointer;
+            }
+
+            button.send:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+
+            footer {
+                text-align: center;
+                font-size: 0.85rem;
+                color: #94a3b8;
+                padding: 0.75rem 0 1.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>DIVAN-LM Chat Interface</h1>
+        </header>
+
+        <main>
+            <aside>
+                <h2>Conversations</h2>
+                <div class="history" id="conversation-list">
+                    <!-- Populated by frontend script -->
+                </div>
+                <div style="padding: 1rem">
+                    <button
+                        id="new-conversation"
+                        class="send"
+                        style="width: 100%; text-align: center"
+                    >
+                        + New Conversation
+                    </button>
+                </div>
+            </aside>
+
+            <section>
+                <div class="chat-log" id="chat-log">
+                    <div class="message system">
+                        Select a conversation or start a new one to chat with
+                        your local model.
+                    </div>
+                </div>
+                <div class="composer">
+                    <form id="chat-form">
+                        <textarea
+                            id="chat-input"
+                            placeholder="Type your message…"
+                            disabled
+                        ></textarea>
+                        <button type="submit" class="send" disabled>
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+
+        <footer>DIVAN language model</footer>
+
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script type="module" src="./app.js"></script>
+    </body>
+</html>
