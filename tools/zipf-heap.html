@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zipf & Heap — Text Law Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000;
+    --bg-2: #08080a;
+    --surface: #0c0c0e;
+    --surface-2: #131316;
+    --fg: #ffffff;
+    --fg-dim: #c9c9d1;
+    --muted: #6b6b73;
+    --muted-2: #3a3a40;
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.16);
+    --accent: #ffffff;
+    --radius: 14px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Inter", ui-sans-serif, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-feature-settings: "ss01", "cv11", "tnum";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    padding: 22px 26px 22px;
+    gap: 18px;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,255,255,0.05), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(255,255,255,0.04), transparent 60%),
+      var(--bg);
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #fff 0%, #888 100%);
+    display: grid; place-items: center;
+    color: #000;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.02em;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.1) inset,
+      0 8px 24px -8px rgba(255,255,255,0.25);
+  }
+  header h1 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--fg);
+  }
+  header h1 .dim { color: var(--muted); font-weight: 400; }
+  .pills {
+    display: flex;
+    gap: 6px;
+  }
+  .pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--fg-dim);
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pill .dot {
+    width: 6px; height: 6px; border-radius: 999px; background: #fff;
+    box-shadow: 0 0 8px rgba(255,255,255,0.7);
+  }
+
+  /* Layout */
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.9fr) 2.2fr;
+    gap: 18px;
+    min-height: 0;
+  }
+  .panel {
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fg-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .panel-head .sub {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+  .panel-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Input */
+  textarea {
+    flex: 1 1 auto;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    resize: none;
+    padding: 14px 16px;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 12.5px;
+    line-height: 1.65;
+    background: transparent;
+    color: var(--fg);
+  }
+  textarea::placeholder { color: var(--muted-2); }
+  textarea::selection { background: rgba(255,255,255,0.18); }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+  button {
+    flex: 1;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg-dim);
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  button:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--fg);
+    border-color: var(--line-strong);
+  }
+  button.primary {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    font-weight: 600;
+  }
+  button.primary:hover { background: #e5e5e5; }
+
+  /* Right column */
+  .right {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 14px;
+    min-height: 0;
+  }
+  .tabs {
+    display: inline-flex;
+    padding: 4px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    gap: 2px;
+    align-self: start;
+  }
+  .tab {
+    padding: 8px 16px;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+    user-select: none;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--fg-dim); }
+  .tab.active {
+    background: #fff;
+    color: #000;
+    font-weight: 600;
+    box-shadow: 0 4px 16px -4px rgba(255,255,255,0.25);
+  }
+
+  /* Result panel structure */
+  .result {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%);
+    overflow: hidden;
+  }
+  .view { display: none; flex-direction: column; min-height: 0; }
+  .view.active { display: flex; }
+
+  /* Stats strip */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat {
+    padding: 14px 18px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat:last-child { border-right: 0; }
+  .stat .k {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .stat .v {
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--fg);
+    line-height: 1.1;
+  }
+  .stat .v.dim { color: var(--muted-2); }
+
+  /* Result body: table + chart */
+  .result-body {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: minmax(260px, 0.9fr) 1.4fr;
+    min-height: 0;
+  }
+  .result-col {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-right: 1px solid var(--line);
+  }
+  .result-col:last-child { border-right: 0; }
+  .col-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* Table */
+  .table-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    font-size: 12px;
+  }
+  th, td {
+    padding: 8px 16px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  th {
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--muted);
+    font-family: "Inter", sans-serif;
+  }
+  td { border-bottom: 1px solid var(--line); color: var(--fg-dim); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.rank { color: var(--muted); width: 36px; }
+  td.word { color: var(--fg); font-weight: 500; }
+  tbody tr { transition: background 0.12s; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+  /* Canvas */
+  canvas { display: block; width: 100%; height: 100%; }
+  .canvas-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    padding: 14px 16px;
+  }
+  .legend {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    background: rgba(12,12,14,0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 10px;
+    color: var(--fg-dim);
+    letter-spacing: 0.04em;
+    line-height: 1.7;
+    font-weight: 500;
+  }
+  .legend i {
+    display: inline-block;
+    width: 14px;
+    height: 2px;
+    background: #fff;
+    vertical-align: middle;
+    margin-right: 8px;
+    border-radius: 2px;
+  }
+  .legend i.dash {
+    background: repeating-linear-gradient(to right, #fff 0 4px, transparent 4px 8px);
+  }
+
+  .empty-row td {
+    padding: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 0;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
+
+  /* Responsive — keep no-scroll on common laptops */
+  @media (max-height: 720px) {
+    body { padding: 14px 18px; gap: 12px; }
+    .stat .v { font-size: 17px; }
+    textarea { font-size: 12px; padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Zipf &amp; Heap <span class="dim">— Text Law Analyzer</span></h1>
+  </div>
+</header>
+
+<div class="grid">
+  <!-- LEFT: input -->
+  <section class="panel">
+    <div class="panel-head"><span>Input Text</span><span class="sub">type to analyze in realtime</span></div>
+    <div class="panel-body">
+      <textarea id="textInput" spellcheck="false" placeholder="Paste or type text here. The longer the corpus, the cleaner the laws emerge."></textarea>
+      <div class="controls">
+        <button id="sampleBtn">Load Sample</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: results -->
+  <section class="right">
+    <div class="tabs">
+      <div class="tab active" data-tab="zipf">Zipf's Law</div>
+      <div class="tab" data-tab="heap">Heap's Law</div>
+    </div>
+
+    <div class="result">
+      <!-- Zipf -->
+      <div class="view active" id="view-zipf">
+        <div class="stats">
+          <div class="stat"><div class="k">Tokens</div><div class="v dim" id="z-tokens">—</div></div>
+          <div class="stat"><div class="k">Vocabulary</div><div class="v dim" id="z-vocab">—</div></div>
+          <div class="stat"><div class="k">Slope (s)</div><div class="v dim" id="z-slope">—</div></div>
+          <div class="stat"><div class="k">R²</div><div class="v dim" id="z-r2">—</div></div>
+        </div>
+        <div class="result-body">
+          <div class="result-col">
+            <div class="col-head"><span>Top Words</span><span id="z-shown">—</span></div>
+            <div class="table-wrap">
+              <table id="zipfTable">
+                <thead><tr><th>Rank</th><th>Word</th><th class="num">Freq</th><th class="num">f × r</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="4">No data yet</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="result-col">
+            <div class="col-head"><span>Log–Log Plot</span><span>rank → freq</span></div>
+            <div class="canvas-wrap">
+              <canvas id="zipfChart"></canvas>
+              <div class="legend"><div><i></i>Observed</div><div><i class="dash"></i>Zipf fit</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Heap -->
+      <div class="view" id="view-heap">
+        <div class="stats">
+          <div class="stat"><div class="k">Tokens (N)</div><div class="v dim" id="h-tokens">—</div></div>
+          <div class="stat"><div class="k">Vocab (V)</div><div class="v dim" id="h-vocab">—</div></div>
+          <div class="stat"><div class="k">K</div><div class="v dim" id="h-k">—</div></div>
+          <div class="stat"><div class="k">β</div><div class="v dim" id="h-beta">—</div></div>
+        </div>
+        <div class="result-body">
+          <div class="result-col">
+            <div class="col-head"><span>Sample Points</span><span id="h-shown">—</span></div>
+            <div class="table-wrap">
+              <table id="heapTable">
+                <thead><tr><th class="num">N</th><th class="num">V(N)</th><th class="num">K·N^β</th><th class="num">Δ%</th></tr></thead>
+                <tbody><tr class="empty-row"><td colspan="4">No data yet</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="result-col">
+            <div class="col-head"><span>Vocabulary vs Tokens</span><span>N → V</span></div>
+            <div class="canvas-wrap">
+              <canvas id="heapChart"></canvas>
+              <div class="legend"><div><i></i>Observed</div><div><i class="dash"></i>K · N^β</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const textInput = $('textInput');
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const which = t.dataset.tab;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      $('view-' + which).classList.add('active');
+      requestAnimationFrame(() => {
+        if (lastResult) {
+          if (which === 'zipf') drawZipf(lastResult.zipf);
+          else drawHeap(lastResult.heap);
+        }
+      });
+    });
+  });
+
+  let debounceTimer = null;
+  textInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runAnalysis, 160);
+  });
+
+  $('clearBtn').addEventListener('click', () => {
+    textInput.value = '';
+    clearTimeout(debounceTimer);
+    resetUI();
+    textInput.focus();
+  });
+
+  $('sampleBtn').addEventListener('click', () => {
+    textInput.value = SAMPLE;
+    clearTimeout(debounceTimer);
+    runAnalysis();
+  });
+
+  let lastResult = null;
+
+  function tokenize(text) {
+    return (text.toLowerCase().match(/[a-zÀ-ɏЀ-ӿ؀-ۿ']+/g) || []);
+  }
+
+  function computeZipf(tokens) {
+    const counts = new Map();
+    for (const t of tokens) counts.set(t, (counts.get(t) || 0) + 1);
+    const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    const points = ranked.map((e, i) => ({ rank: i + 1, word: e[0], freq: e[1] }));
+    const xs = points.map(p => Math.log(p.rank));
+    const ys = points.map(p => Math.log(p.freq));
+    const { slope, intercept, r2 } = linreg(xs, ys);
+    const C = Math.exp(intercept);
+    return { points, tokens: tokens.length, vocab: ranked.length, slope: -slope, C, r2 };
+  }
+
+  function computeHeap(tokens) {
+    const seen = new Set();
+    const series = [];
+    const N = tokens.length;
+    const targetSamples = 60;
+    const step = Math.max(1, Math.floor(N / targetSamples));
+    for (let i = 0; i < N; i++) {
+      seen.add(tokens[i]);
+      if ((i + 1) % step === 0 || i === N - 1) {
+        series.push({ n: i + 1, v: seen.size });
+      }
+    }
+    const xs = series.map(p => Math.log(p.n));
+    const ys = series.map(p => Math.log(p.v));
+    const { slope, intercept, r2 } = linreg(xs, ys);
+    const K = Math.exp(intercept);
+    const beta = slope;
+    const enriched = series.map(p => ({
+      n: p.n, v: p.v,
+      pred: K * Math.pow(p.n, beta),
+    })).map(p => ({ ...p, delta: ((p.v - p.pred) / p.pred) * 100 }));
+    return { points: enriched, tokens: N, vocab: seen.size, K, beta, r2 };
+  }
+
+  function linreg(xs, ys) {
+    const n = xs.length;
+    if (n < 2) return { slope: 0, intercept: 0, r2: 0 };
+    let sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+    for (let i = 0; i < n; i++) {
+      sx += xs[i]; sy += ys[i];
+      sxx += xs[i] * xs[i];
+      sxy += xs[i] * ys[i];
+      syy += ys[i] * ys[i];
+    }
+    const slope = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+    const intercept = (sy - slope * sx) / n;
+    const num = n * sxy - sx * sy;
+    const den = Math.sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
+    const r = den === 0 ? 0 : num / den;
+    return { slope, intercept, r2: r * r };
+  }
+
+  function runAnalysis() {
+    const tokens = tokenize(textInput.value);
+    if (tokens.length < 5) {
+      resetUI();
+      return;
+    }
+    const zipf = computeZipf(tokens);
+    const heap = computeHeap(tokens);
+    lastResult = { zipf, heap };
+    renderZipf(zipf);
+    renderHeap(heap);
+    drawZipf(zipf);
+    drawHeap(heap);
+  }
+
+  function resetUI() {
+    lastResult = null;
+    $('zipfTable').querySelector('tbody').innerHTML = '<tr class="empty-row"><td colspan="4">No data yet</td></tr>';
+    $('heapTable').querySelector('tbody').innerHTML = '<tr class="empty-row"><td colspan="4">No data yet</td></tr>';
+    ['z-tokens','z-vocab','z-slope','z-r2','h-tokens','h-vocab','h-k','h-beta'].forEach(id => {
+      const el = $(id);
+      el.textContent = '—';
+      el.classList.add('dim');
+    });
+    $('z-shown').textContent = '—';
+    $('h-shown').textContent = '—';
+    clearCanvas('zipfChart');
+    clearCanvas('heapChart');
+  }
+
+  function setLive(id, val) {
+    const el = $(id);
+    el.textContent = val;
+    el.classList.remove('dim');
+  }
+
+  function renderZipf(z) {
+    setLive('z-tokens', z.tokens.toLocaleString());
+    setLive('z-vocab', z.vocab.toLocaleString());
+    setLive('z-slope', z.slope.toFixed(3));
+    setLive('z-r2', z.r2.toFixed(3));
+    const limit = Math.min(50, z.points.length);
+    $('z-shown').textContent = `top ${limit} of ${z.vocab.toLocaleString()}`;
+    const tbody = $('zipfTable').querySelector('tbody');
+    let html = '';
+    for (let i = 0; i < limit; i++) {
+      const p = z.points[i];
+      html += `<tr><td class="rank">${p.rank}</td><td class="word">${escapeHtml(p.word)}</td><td class="num">${p.freq}</td><td class="num">${(p.freq * p.rank).toFixed(0)}</td></tr>`;
+    }
+    tbody.innerHTML = html;
+  }
+
+  function renderHeap(h) {
+    setLive('h-tokens', h.tokens.toLocaleString());
+    setLive('h-vocab', h.vocab.toLocaleString());
+    setLive('h-k', h.K.toFixed(2));
+    setLive('h-beta', h.beta.toFixed(3));
+    $('h-shown').textContent = `${h.points.length} samples`;
+    const tbody = $('heapTable').querySelector('tbody');
+    let html = '';
+    for (const p of h.points) {
+      const sign = p.delta >= 0 ? '+' : '';
+      html += `<tr><td class="num">${p.n}</td><td class="num word">${p.v}</td><td class="num">${p.pred.toFixed(1)}</td><td class="num">${sign}${p.delta.toFixed(1)}%</td></tr>`;
+    }
+    tbody.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ===== Canvas =====
+  function setupCanvas(id) {
+    const cvs = $(id);
+    const dpr = window.devicePixelRatio || 1;
+    const rect = cvs.getBoundingClientRect();
+    cvs.width = rect.width * dpr;
+    cvs.height = rect.height * dpr;
+    const ctx = cvs.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    return { ctx, w: rect.width, h: rect.height };
+  }
+
+  function clearCanvas(id) {
+    const cvs = $(id);
+    const ctx = cvs.getContext('2d');
+    ctx.clearRect(0, 0, cvs.width, cvs.height);
+  }
+
+  function drawAxes(ctx, w, h, padL, padR, padT, padB, opts) {
+    ctx.font = '10px "JetBrains Mono", ui-monospace, Menlo, monospace';
+
+    // gridlines
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const gridX = 5, gridY = 5;
+    for (let i = 0; i <= gridX; i++) {
+      const x = padL + ((w - padL - padR) * i) / gridX;
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, h - padB);
+    }
+    for (let i = 0; i <= gridY; i++) {
+      const y = padT + ((h - padT - padB) * i) / gridY;
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+    }
+    ctx.stroke();
+
+    // axes (subtle)
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, h - padB);
+    ctx.lineTo(w - padR, h - padB);
+    ctx.stroke();
+
+    // labels
+    ctx.fillStyle = '#6b6b73';
+    ctx.textAlign = 'center';
+    ctx.fillText(opts.xlabel, (padL + w - padR) / 2, h - 4);
+    ctx.save();
+    ctx.translate(14, (padT + h - padB) / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(opts.ylabel, 0, 0);
+    ctx.restore();
+
+    // tick labels
+    ctx.fillStyle = '#9c9ca6';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= gridX; i++) {
+      const t = i / gridX;
+      const x = padL + ((w - padL - padR) * i) / gridX;
+      const v = opts.xMin + t * (opts.xMax - opts.xMin);
+      ctx.fillText(opts.xfmt(v), x, h - padB + 14);
+    }
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= gridY; i++) {
+      const t = i / gridY;
+      const y = h - padB - ((h - padT - padB) * i) / gridY;
+      const v = opts.yMin + t * (opts.yMax - opts.yMin);
+      ctx.fillText(opts.yfmt(v), padL - 8, y + 3);
+    }
+  }
+
+  function drawZipf(z) {
+    const { ctx, w, h } = setupCanvas('zipfChart');
+    if (!z || z.points.length < 2) return;
+    const padL = 56, padR = 22, padT = 18, padB = 32;
+    const xs = z.points.map(p => Math.log10(p.rank));
+    const ys = z.points.map(p => Math.log10(p.freq));
+    const xMin = 0, xMax = Math.max(...xs) || 1;
+    const yMin = Math.min(...ys), yMax = Math.max(...ys);
+    drawAxes(ctx, w, h, padL, padR, padT, padB, {
+      xlabel: 'log₁₀ rank', ylabel: 'log₁₀ freq',
+      xMin, xMax, yMin, yMax,
+      xfmt: v => v.toFixed(1), yfmt: v => v.toFixed(1),
+    });
+    const sx = v => padL + ((v - xMin) / (xMax - xMin || 1)) * (w - padL - padR);
+    const sy = v => h - padB - ((v - yMin) / (yMax - yMin || 1)) * (h - padT - padB);
+
+    // glow under points
+    ctx.fillStyle = '#fff';
+    for (let i = 0; i < xs.length; i++) {
+      const x = sx(xs[i]), y = sy(ys[i]);
+      ctx.globalAlpha = 0.18;
+      ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // fit line (clipped to plot area)
+    const logC10 = Math.log10(z.C);
+    const slope = -z.slope;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padL, padT, w - padL - padR, h - padT - padB);
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    const y0 = logC10 + slope * xMin;
+    const y1 = logC10 + slope * xMax;
+    ctx.moveTo(sx(xMin), sy(y0));
+    ctx.lineTo(sx(xMax), sy(y1));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawHeap(hd) {
+    const { ctx, w, h } = setupCanvas('heapChart');
+    if (!hd || hd.points.length < 2) return;
+    const padL = 56, padR = 22, padT = 18, padB = 32;
+    const xs = hd.points.map(p => p.n);
+    const ys = hd.points.map(p => p.v);
+    const xMin = 0, xMax = Math.max(...xs);
+    const yMin = 0, yMax = Math.max(...ys);
+    drawAxes(ctx, w, h, padL, padR, padT, padB, {
+      xlabel: 'tokens (N)', ylabel: 'vocab (V)',
+      xMin, xMax, yMin, yMax,
+      xfmt: v => v >= 1000 ? (v/1000).toFixed(1)+'k' : Math.round(v).toString(),
+      yfmt: v => Math.round(v).toString(),
+    });
+    const sx = v => padL + ((v - xMin) / (xMax - xMin || 1)) * (w - padL - padR);
+    const sy = v => h - padB - ((v - yMin) / (yMax - yMin || 1)) * (h - padT - padB);
+
+    // area fill under observed
+    ctx.beginPath();
+    ctx.moveTo(sx(xs[0]), sy(0));
+    for (let i = 0; i < xs.length; i++) ctx.lineTo(sx(xs[i]), sy(ys[i]));
+    ctx.lineTo(sx(xs[xs.length - 1]), sy(0));
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, padT, 0, h - padB);
+    grad.addColorStop(0, 'rgba(255,255,255,0.18)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // observed line
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for (let i = 0; i < xs.length; i++) {
+      const x = sx(xs[i]), y = sy(ys[i]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // fit (clipped to plot area)
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padL, padT, w - padL - padR, h - padT - padB);
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+      const n = xMin + ((xMax - xMin) * i) / steps;
+      const v = hd.K * Math.pow(Math.max(n, 1), hd.beta);
+      const x = sx(n), y = sy(v);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    if (!lastResult) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      drawZipf(lastResult.zipf);
+      drawHeap(lastResult.heap);
+    }, 80);
+  });
+
+  const SAMPLE = `It was the best of times, it was the worst of times, it was the age of wisdom, it was the age of foolishness, it was the epoch of belief, it was the epoch of incredulity, it was the season of light, it was the season of darkness, it was the spring of hope, it was the winter of despair. We had everything before us, we had nothing before us, we were all going direct to heaven, we were all going direct the other way. In short, the period was so far like the present period that some of its noisiest authorities insisted on its being received, for good or for evil, in the superlative degree of comparison only.
+
+There were a king with a large jaw and a queen with a plain face on the throne of England; there were a king with a large jaw and a queen with a fair face on the throne of France. In both countries it was clearer than crystal to the lords of the State preserves of loaves and fishes that things in general were settled forever.
+
+It is a truth universally acknowledged, that a single man in possession of a good fortune must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families that he is considered as the rightful property of some one or other of their daughters.
+
+Call me Ishmael. Some years ago, never mind how long precisely, having little or no money in my purse, and nothing particular to interest me on shore, I thought I would sail about a little and see the watery part of the world. It is a way I have of driving off the spleen and regulating the circulation. Whenever I find myself growing grim about the mouth; whenever it is a damp, drizzly November in my soul; whenever I find myself involuntarily pausing before coffin warehouses, and bringing up the rear of every funeral I meet; and especially whenever my hypos get such an upper hand of me, that it requires a strong moral principle to prevent me from deliberately stepping into the street, and methodically knocking people's hats off, then I account it high time to get to sea as soon as I can.`;
+})();
+</script>
+</body>
+</html>
