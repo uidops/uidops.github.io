@@ -169,6 +169,86 @@
     border-top: 1px solid var(--line);
     background: var(--surface-2);
   }
+
+  /* Options */
+  .options {
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+    padding: 10px 12px 4px;
+  }
+  .options-title {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .opt-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 10px;
+    padding-bottom: 6px;
+  }
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    color: var(--fg-dim);
+    transition: color 0.15s;
+  }
+  .opt:hover { color: var(--fg); }
+  .opt input { display: none; }
+  .opt .box {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: var(--surface);
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .opt input:checked + .box {
+    background: #fff;
+    border-color: #fff;
+  }
+  .opt input:checked + .box::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 0px;
+    width: 4px;
+    height: 8px;
+    border: solid #000;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .opt-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 12px;
+    color: var(--fg-dim);
+  }
+  .opt-row label { color: var(--muted); font-size: 11px; letter-spacing: 0.04em; }
+  .opt-row input[type="number"] {
+    width: 48px;
+    padding: 4px 6px;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 12px;
+    outline: none;
+  }
+  .opt-row input[type="number"]:focus { border-color: #fff; }
   button {
     flex: 1;
     border: 1px solid var(--line);
@@ -414,6 +494,17 @@
     <div class="panel-head"><span>Input Text</span><span class="sub">type to analyze in realtime</span></div>
     <div class="panel-body">
       <textarea id="textInput" spellcheck="false" placeholder="Paste or type text here. The longer the corpus, the cleaner the laws emerge."></textarea>
+      <div class="options">
+        <div class="options-title">Preprocessing</div>
+        <div class="opt-grid">
+          <label class="opt"><input type="checkbox" id="opt-lowercase" checked><span class="box"></span>Lowercase</label>
+          <label class="opt"><input type="checkbox" id="opt-stopwords"><span class="box"></span>Remove stopwords</label>
+          <label class="opt"><input type="checkbox" id="opt-numbers" checked><span class="box"></span>Remove numbers</label>
+          <label class="opt"><input type="checkbox" id="opt-stem"><span class="box"></span>Stemming</label>
+          <label class="opt"><input type="checkbox" id="opt-punct" checked><span class="box"></span>Strip punctuation</label>
+          <div class="opt-row"><label for="opt-minlen">min len</label><input type="number" id="opt-minlen" min="1" max="10" value="1"></div>
+        </div>
+      </div>
       <div class="controls">
         <button id="sampleBtn">Load Sample</button>
         <button id="clearBtn">Clear</button>
@@ -529,10 +620,63 @@
     runAnalysis();
   });
 
+  // Options re-trigger analysis
+  ['opt-lowercase','opt-stopwords','opt-numbers','opt-stem','opt-punct','opt-minlen'].forEach(id => {
+    $(id).addEventListener('change', runAnalysis);
+    $(id).addEventListener('input', runAnalysis);
+  });
+
   let lastResult = null;
 
-  function tokenize(text) {
-    return (text.toLowerCase().match(/[a-zÀ-ɏЀ-ӿ؀-ۿ']+/g) || []);
+  const STOPWORDS = new Set(("a an the and or but if of at by for with about against between into through during before after above below to from up down in on out off over under again further then once here there when where why how all any both each few more most other some such no nor not only own same so than too very can will just don should now is was are were be been being have has had do does did doing would could should ought i me my myself we our ours ourselves you your yours yourself yourselves he him his himself she her hers herself it its itself they them their theirs themselves what which who whom this that these those am as until while because s t").split(/\s+/));
+
+  function stem(w) {
+    if (w.length <= 3) return w;
+    const suf = [
+      ['ational', 'ate'], ['tional', 'tion'], ['ization', 'ize'],
+      ['ousness', 'ous'], ['fulness', 'ful'], ['iveness', 'ive'],
+      ['ation', 'ate'], ['ement', ''], ['ment', ''], ['ness', ''],
+      ['tion', 't'], ['ible', ''], ['able', ''], ['ous', ''],
+      ['ing', ''], ['ed', ''], ['ly', ''], ['es', ''], ['er', ''], ['est', ''],
+      ['s', ''],
+    ];
+    for (const [s, r] of suf) {
+      if (w.endsWith(s) && w.length - s.length >= 3) {
+        return w.slice(0, -s.length) + r;
+      }
+    }
+    return w;
+  }
+
+  function getOpts() {
+    return {
+      lowercase: $('opt-lowercase').checked,
+      stopwords: $('opt-stopwords').checked,
+      numbers: $('opt-numbers').checked,
+      stem: $('opt-stem').checked,
+      punct: $('opt-punct').checked,
+      minlen: Math.max(1, parseInt($('opt-minlen').value, 10) || 1),
+    };
+  }
+
+  function tokenize(text, opts) {
+    let src = opts.lowercase ? text.toLowerCase() : text;
+    let re;
+    if (opts.punct && opts.numbers) {
+      re = /[\p{L}']+/gu;            // letters only
+    } else if (opts.punct && !opts.numbers) {
+      re = /[\p{L}\p{N}']+/gu;        // letters + digits
+    } else if (!opts.punct && opts.numbers) {
+      re = /\S*[\p{L}]\S*/gu;         // any non-space chunk that has a letter
+    } else {
+      re = /\S+/gu;                   // any non-space chunk
+    }
+    let toks = src.match(re) || [];
+    if (opts.numbers) toks = toks.filter(t => /[\p{L}]/u.test(t));
+    if (opts.minlen > 1) toks = toks.filter(t => t.length >= opts.minlen);
+    if (opts.stopwords) toks = toks.filter(t => !STOPWORDS.has(t.toLowerCase()));
+    if (opts.stem) toks = toks.map(t => stem(t));
+    return toks;
   }
 
   function computeZipf(tokens) {
@@ -590,7 +734,7 @@
   }
 
   function runAnalysis() {
-    const tokens = tokenize(textInput.value);
+    const tokens = tokenize(textInput.value, getOpts());
     if (tokens.length < 5) {
       resetUI();
       return;
