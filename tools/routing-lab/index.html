@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Routing & Shortest Path Simulator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="brand">
+                <span class="brand-title">Network Routing Simulator</span>
+                <span class="formula-tag">Delay = t<sub>prop</sub> + L / Bandwidth</span>
+            </div>
+            <div class="top-controls">
+                <button id="theme-toggle" class="btn-icon" title="Toggle Light/Dark Theme">
+                    <span id="theme-icon">Light Mode</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Viewport (100vh Single Screen on Desktop) -->
+        <main class="dashboard-container">
+            <!-- Left Column: Toolbar, Topology Controls & Settings -->
+            <aside class="sidebar-panel">
+                <!-- Paint-like Canvas Tools -->
+                <div class="panel-box">
+                    <div class="box-title">Canvas Interactive Tools</div>
+                    <div class="tool-grid">
+                        <button class="btn-tool active" id="tool-select" title="Select / Move Router">
+                            Move Router
+                        </button>
+                        <button class="btn-tool" id="tool-node" title="Add Router Node">
+                            Add Router
+                        </button>
+                        <button class="btn-tool" id="tool-link" title="Connect Routers with Link">
+                            Add Link
+                        </button>
+                        <button class="btn-tool" id="tool-delete" title="Delete Router or Link">
+                            Delete Element
+                        </button>
+                    </div>
+
+                    <div class="preset-row" style="margin-top: 0.4rem;">
+                        <button class="btn-chip" id="btn-preset-mesh">Simple Mesh</button>
+                        <button class="btn-chip" id="btn-preset-star">Star Topology</button>
+                        <button class="btn-chip" id="btn-clear-canvas">Clear All</button>
+                    </div>
+                </div>
+
+                <!-- Simulation & Path Finder Controls -->
+                <div class="panel-box">
+                    <div class="box-title">Routing Goal Parameters</div>
+                    
+                    <div class="inputs-row-2">
+                        <div class="input-field">
+                            <label for="select-source">Source Node</label>
+                            <select id="select-source"></select>
+                        </div>
+                        <div class="input-field">
+                            <label for="select-dest">Destination Node</label>
+                            <select id="select-dest"></select>
+                        </div>
+                    </div>
+
+                    <div class="input-field">
+                        <label for="packet-size">Packet Size (L in Bytes)</label>
+                        <input type="number" id="packet-size" value="1500" min="64" max="65535">
+                    </div>
+
+                    <div style="display: flex; gap: 0.3rem; margin-top: 0.2rem;">
+                        <button id="btn-find-paths" class="btn-action" style="flex: 1; padding: 0.45rem 0.2rem; font-size: 0.75rem;">Calculate</button>
+                        <button id="btn-simulate-packet" class="btn-action" style="flex: 1; padding: 0.45rem 0.2rem; font-size: 0.75rem;">Send Selected</button>
+                        <button id="btn-simulate-all" class="btn-action" style="flex: 1.2; padding: 0.45rem 0.2rem; font-size: 0.75rem;">Race All Paths</button>
+                    </div>
+                </div>
+
+                <!-- Link Configuration Modal / Panel -->
+                <div class="panel-box link-editor-box" id="link-editor" style="display: none;">
+                    <div class="box-title" id="link-editor-title">Edit Link Properties</div>
+                    <div class="input-field">
+                        <label for="link-bw">Bandwidth (Mbps)</label>
+                        <input type="number" id="link-bw" value="100" min="1" max="10000">
+                    </div>
+                    <div class="input-field">
+                        <label for="link-delay">Propagation Delay (ms)</label>
+                        <input type="number" id="link-delay" value="10" min="0" max="1000">
+                    </div>
+                    <div class="preset-row">
+                        <button class="btn-chip active" id="btn-save-link">Save Link</button>
+                        <button class="btn-chip" id="btn-cancel-link">Cancel</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Column: Paint Canvas Area -->
+            <section class="canvas-panel">
+                <div class="panel-box canvas-box">
+                    <div class="canvas-header">
+                        <span class="canvas-hint" id="canvas-status">Mode: Select & Drag Routers. Click a router or link to edit.</span>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <canvas id="networkCanvas"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Sorted Paths Results Table -->
+            <aside class="paths-panel">
+                <div class="panel-box table-box-full">
+                    <div class="box-title">Fastest Routing Paths (Sorted)</div>
+                    <div class="table-container">
+                        <table class="simple-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Path Route</th>
+                                    <th>Total Delay (ms)</th>
+                                    <th>Bottleneck BW</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paths-table-body">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-muted);">
+                                        Build network & click "Calculate"
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Race Leaderboard & Final Arrival Times Panel -->
+                <div class="panel-box" id="race-results-box" style="margin-top: 0.5rem; display: none;">
+                    <div class="box-title">Race Arrival Final Times</div>
+                    <div id="race-results-list" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.3rem;"></div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
