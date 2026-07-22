@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-Term Multiplicative Middle RNG</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <div class="brand">
+                <span class="brand-title">3-Term Multiplicative Middle Generator</span>
+                <span class="formula-tag">X<sub>n</sub> = mid(X<sub>n-1</sub> · X<sub>n-2</sub> · X<sub>n-3</sub>)</span>
+            </div>
+            <div class="top-controls">
+                <button id="theme-toggle" class="btn-icon" title="Toggle Light/Dark Theme">
+                    <span id="theme-icon">☀️ Light</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Viewport (100vh Single Screen on Desktop) -->
+        <main class="dashboard-container">
+            <!-- Left Column: Controls & Stats -->
+            <aside class="sidebar-panel">
+                <!-- Controls -->
+                <div class="panel-box">
+                    <div class="box-title">Generator Settings</div>
+                    <div class="preset-row">
+                        <button class="btn-chip active" data-preset="standard">Standard</button>
+                        <button class="btn-chip" data-preset="cycle">Cycle Trap</button>
+                        <button class="btn-chip" data-preset="zero">Zero Decay</button>
+                        <button class="btn-chip" data-preset="random">🎲 Random</button>
+                    </div>
+
+                    <div class="inputs-grid">
+                        <div class="input-field">
+                            <label for="seed1">Seed 1</label>
+                            <input type="number" id="seed1" value="1234" min="1000" max="9999">
+                        </div>
+                        <div class="input-field">
+                            <label for="seed2">Seed 2</label>
+                            <input type="number" id="seed2" value="5678" min="1000" max="9999">
+                        </div>
+                        <div class="input-field">
+                            <label for="seed3">Seed 3</label>
+                            <input type="number" id="seed3" value="9012" min="1000" max="9999">
+                        </div>
+                    </div>
+
+                    <div class="inputs-row-2">
+                        <div class="input-field">
+                            <label for="sample-size">Length (N)</label>
+                            <select id="sample-size">
+                                <option value="50">50</option>
+                                <option value="100" selected>100</option>
+                                <option value="500">500</option>
+                                <option value="1000">1000</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label for="hist-bins">Bins (k)</label>
+                            <select id="hist-bins">
+                                <option value="10" selected>10 Bins</option>
+                                <option value="20">20 Bins</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="btn-generate" class="btn-action">Run Simulation</button>
+                </div>
+
+                <!-- Stats Summary -->
+                <div class="panel-box stats-box">
+                    <div class="box-title">Chi-Square Test (χ²)</div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">χ² Value</span>
+                        <span class="stat-val" id="val-chi">0.00</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Critical (α=0.05)</span>
+                        <span class="stat-val" id="val-chi-crit">16.92</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Uniformity</span>
+                        <span class="badge" id="badge-chi">UNIFORM</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Degeneracy</span>
+                        <span class="badge badge-info" id="badge-degen">HEALTHY</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Column: Visualizations & Table -->
+            <section class="main-panel">
+                <!-- Charts Area (Line Plot, Histogram, & Lag Plot) -->
+                <div class="panel-box chart-box">
+                    <div class="chart-header">
+                        <div class="tab-selectors">
+                            <button class="tab-link active" data-tab="tab-line">Sequence Plot (U<sub>n</sub>)</button>
+                            <button class="tab-link" data-tab="tab-hist">Frequency Histogram</button>
+                            <button class="tab-link" data-tab="tab-lag">Lag Plot (X<sub>n</sub>, X<sub>n+1</sub>)</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="tab-pane active" id="tab-line">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                        <div class="tab-pane" id="tab-hist">
+                            <canvas id="histChart"></canvas>
+                        </div>
+                        <div class="tab-pane" id="tab-lag">
+                            <canvas id="lagChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Area -->
+                <div class="panel-box table-box">
+                    <div class="box-title">Sequence Output Table</div>
+                    <div class="table-container">
+                        <table class="simple-table">
+                            <thead>
+                                <tr>
+                                    <th>Step n</th>
+                                    <th>Term X<sub>n</sub></th>
+                                    <th>Product (X<sub>n-1</sub> · X<sub>n-2</sub> · X<sub>n-3</sub>)</th>
+                                    <th>Float U<sub>n</sub></th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
