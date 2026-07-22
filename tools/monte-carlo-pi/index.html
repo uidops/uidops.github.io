@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monte Carlo Pi Estimation Lab</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="brand">
+                <span class="brand-title">Monte Carlo Pi Estimation</span>
+                <span class="formula-tag">π ≈ 4 · (n / N)</span>
+            </div>
+            <div class="top-controls">
+                <button id="theme-toggle" class="btn-icon" title="Toggle Light/Dark Theme">
+                    <span id="theme-icon">☀️ Light</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Viewport (100vh Single Screen on Desktop) -->
+        <main class="dashboard-container">
+            <!-- Left Column: Controls & Metrics -->
+            <aside class="sidebar-panel">
+                <!-- Controls -->
+                <div class="panel-box">
+                    <div class="box-title">Simulation Parameters</div>
+                    
+                    <div class="input-field">
+                        <label for="sample-size">Total Points (N)</label>
+                        <select id="sample-size">
+                            <option value="500">500 Points</option>
+                            <option value="1000" selected>1,000 Points</option>
+                            <option value="5000">5,000 Points</option>
+                            <option value="10000">10,000 Points</option>
+                            <option value="50000">50,000 Points</option>
+                        </select>
+                    </div>
+
+                    <div class="input-field">
+                        <label for="sampling-type">Sampling Distribution</label>
+                        <select id="sampling-type">
+                            <option value="uniform" selected>Uniform Random (Mandatory)</option>
+                            <option value="skewed">Non-Uniform Skewed (Error Test)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-field">
+                        <div class="label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                            <label for="seed-value" style="margin-bottom:0;">Seed</label>
+                            <label style="font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; color: var(--text-secondary);">
+                                <input type="checkbox" id="chk-random-seed" checked> Random Seed
+                            </label>
+                        </div>
+                        <input type="number" id="seed-value" value="42" min="1" max="999999" disabled>
+                    </div>
+
+                    <button id="btn-run" class="btn-action">Run Estimation</button>
+                </div>
+
+                <!-- Metrics Box -->
+                <div class="panel-box stats-box">
+                    <div class="box-title">Pi Estimation Results</div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Estimated π</span>
+                        <span class="stat-val" id="val-pi-est">3.1416</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Actual π</span>
+                        <span class="stat-val">3.141593</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Abs Error</span>
+                        <span class="stat-val" id="val-abs-err">0.0000</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Rel Error (%)</span>
+                        <span class="stat-val" id="val-rel-err">0.00%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-lbl">Hits Inside (n)</span>
+                        <span class="stat-val" id="val-hits">785 / 1000</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right Column: Canvas Scatter Plot & Convergence Chart -->
+            <section class="main-panel">
+                <div class="panel-box chart-box">
+                    <div class="chart-header">
+                        <div class="tab-selectors">
+                            <button class="tab-link active" data-tab="tab-scatter">Quarter Circle Scatter Plot</button>
+                            <button class="tab-link" data-tab="tab-convergence">Convergence Curve</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="tab-pane active" id="tab-scatter">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                        <div class="tab-pane" id="tab-convergence">
+                            <canvas id="convergenceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Area -->
+                <div class="panel-box table-box">
+                    <div class="box-title">Sample Coordinates Output</div>
+                    <div class="table-container">
+                        <table class="simple-table">
+                            <thead>
+                                <tr>
+                                    <th>Point #</th>
+                                    <th>X Coordinate</th>
+                                    <th>Y Coordinate</th>
+                                    <th>Distance² (X² + Y²)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
