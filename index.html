@@ -1,99 +1,627 @@
-<!DOCTYPE html>
-<!-- javad (uidops) -->
-<html>
-   <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-      <title>uidops</title>
-      <link rel="icon" type="image/jpeg" href="img/avatar.jpg">
-      <style>
-         body {
-            background-color: #000;
-            color: #9c9c9c
-         }
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="uidops — systems programming, computing research, tools, writing, and experiments."
+        />
+        <title>uidops</title>
+        <link rel="icon" type="image/jpeg" href="img/avatar.jpg" />
+        <style>
+            :root {
+                --darkbg: #68706b;
+                --darkbg-hover: #4c5650;
+                --lightbg: #d1d4d1;
+                --sidebar: #f0f1ee;
+                --page: #ffffff;
+                --line: #b9bdb9;
+                --text: #303431;
+                --muted: #666c68;
+                --link: #314d5b;
+                --max-content: 1160px;
+            }
 
-         @font-face {
-            font-family: iosevka-bolditalic;
-            src: url(fonts/cmuntt.ttf);
-         }
+            * {
+                box-sizing: border-box;
+            }
 
-         * {
-            font-family: iosevka-bolditalic;
-         }
+            html {
+                scroll-behavior: smooth;
+            }
 
-            img.animated-gif {
-            width: 800px;
-            height: auto;
-         }
-      </style>
-   </head>
-   <body>
-      <img class="animated-gif" src="img/07fe13d20f.gif" alt="uidops" />
-      <div style="clear: left;">
-        <h1><b>λ uidops</b></h1>
-        <p>
-            System programmer & Computing researcher
-            <br />
-            C - ASM - PY - LISP - HASKELL | POSIX
-            <br />
-            Interested in 80386/risc-v/mips, Logic, Formal verification, Functional programming
-            <br />
-            OS & Network lover
-            <br />
-            and Live in cpu
-            <br />
-            <br />
-         </p>
-         <hr />
-         <h3><b>λ Contact</b></h3>
-         <p>
-            Telegram: <a href="https://telegram.me/sys_call">sys_call</a> (Don't pm)
-            <br />
-            Matrix: @sys_call:matrix.com
-            <br />
-            Mastodon: @uidops@discuss.systems
-            <br />
-            Mail: <a href="mailto:uidops@cock.li">uidops@cock.li</a>
-            <br />
-            Onion: <a href="http://uidopsdbd3slxbsu.onion">uidopsdbd3slxbsu.onion (DOWN)</a>
-            <br />
-            PGP Public Key: <a href="https://pgp.mit.edu/pks/lookup?op=get&search=0x4446027AF2E02256">0x4446027AF2E02256</a>
-            <br />
-            Github: <a href="https://github.com/uidops">uidops</a>
-            <br />
-         </p>
-         <hr />
-         <pre>
-                             .-----.
-                            /7  .  (
-                           /   .-.  \
-                          /   /   \  \
-                         / `  )   (   )
-                        / `   )   ).  \
-                      .'  _.   \_/  . |
-     .--.           .' _.' )`.        |
-    (    `---...._.'   `---.'_)    ..  \
-     \            `----....___    `. \  |
-      `.           _ ----- _   `._  )/  |
-        `.       /"  \   /"  \`.  `._   |
-          `.    ((O)` ) ((O)` ) `.   `._\
-            `-- '`---'   `---' )  `.    `-.
-               /                  ` \      `-.
-             .'                      `.       `.
-            /                     `  ` `.       `-.
-     .--.   \ ===._____.======. `    `   `. .___.--`     .''''.
-    ' .` `-. `.                )`. `   ` ` \          .' . '  8)
-   (8  .  ` `-.`.               ( .  ` `  .`\      .'  '    ' /
-    \  `. `    `-.               ) ` .   ` ` \  .'   ' .  '  /
-     \ ` `.  ` . \`.    .--.     |  ` ) `   .``/   '  // .  /
-      `.  ``. .   \ \   .-- `.  (  ` /_   ` . / ' .  '/   .'
-        `. ` \  `  \ \  '-.   `-'  .'  `-.  `   .  .'/  .'
-          \ `.`.  ` \ \    ) /`._.`       `.  ` .  .'  /
-    LGB    |  `.`. . \ \  (.'               `.   .'  .'
-        __/  .. \ \ ` ) \                     \.' .. \__
- .-._.-'     '"  ) .-'   `.                   (  '"     `-._.--.
-(_________.-====' / .' /\_)`--..__________..-- `====-. _________)
-                 (.'(.'
-        </pre>
-      </div>
-   </body>
+            body {
+                margin: 0;
+                background: var(--page);
+                color: var(--text);
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 15px;
+                line-height: 1.45;
+            }
+
+            a {
+                color: var(--link);
+                text-decoration: underline;
+            }
+
+            a:hover,
+            a:focus-visible {
+                color: #172e3a;
+            }
+
+            a:focus-visible {
+                outline: 2px solid var(--darkbg-hover);
+                outline-offset: 3px;
+            }
+
+            code,
+            pre {
+                font-family: "Courier New", Courier, monospace;
+            }
+
+            .skip-link {
+                position: absolute;
+                top: -3rem;
+                left: 0.5rem;
+                padding: 0.4rem 0.7rem;
+                background: var(--text);
+                color: #fff;
+                z-index: 10;
+            }
+
+            .skip-link:focus {
+                top: 0.5rem;
+            }
+
+            .page {
+                width: min(100%, var(--max-content));
+                margin: 0 auto;
+            }
+
+            /* Vim-style header: narrow color bars, a quiet title, and simple links. */
+            .header-bars {
+                height: 5px;
+                background: var(--darkbg);
+                border-bottom: 1px solid var(--line);
+            }
+
+            .header-main {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 76px;
+                padding: 0.8rem 1rem;
+                background: var(--lightbg);
+                border-bottom: 1px solid var(--line);
+                text-align: center;
+            }
+
+            .header-main h1 {
+                margin: 0;
+                color: #3f4843;
+                font-size: 1.45rem;
+                font-weight: bold;
+            }
+
+            .header-main h1 a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            .header-main p {
+                margin: 0.2rem 0 0;
+                color: var(--muted);
+                font-size: 0.8rem;
+            }
+
+            .header-rule {
+                height: 5px;
+                background: var(--darkbg);
+                border-bottom: 1px solid var(--line);
+            }
+
+            .body-layout {
+                display: grid;
+                grid-template-columns: 180px minmax(0, 1fr);
+                align-items: stretch;
+            }
+
+            .sidebar {
+                min-height: 100%;
+                padding: 0.75rem;
+                border-right: 3px solid var(--darkbg);
+                background: var(--sidebar);
+                font-size: 0.82rem;
+            }
+
+            .sidebar small {
+                font-size: 0.74rem;
+            }
+
+            .sidebar-section {
+                margin-bottom: 1rem;
+                padding-bottom: 0.85rem;
+                border-bottom: 3px solid var(--darkbg);
+            }
+
+            .sidebar-section:last-child {
+                border-bottom: 0;
+            }
+
+            .sidebar-title {
+                margin: 0 0 0.4rem;
+                color: #3d4641;
+                font-size: 0.84rem;
+                font-weight: bold;
+            }
+
+            .sidebar ul {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+
+            .sidebar li {
+                margin: 0.23rem 0;
+            }
+
+            .sidebar li::before {
+                content: "› ";
+                color: var(--muted);
+            }
+
+            .sidebar p {
+                margin: 0.5rem 0;
+                color: var(--muted);
+                font-size: 0.78rem;
+            }
+
+            .sidebar .active {
+                color: var(--text);
+                font-weight: bold;
+                text-decoration: none;
+            }
+
+            .main {
+                min-width: 0;
+                padding: 1.35rem 1.5rem 2.5rem;
+            }
+
+            .main h2,
+            .main h3 {
+                color: #3d4641;
+                font-weight: bold;
+            }
+
+            .main h2 {
+                margin: 0 0 0.9rem;
+                font-size: 1.15rem;
+            }
+
+            .main h3 {
+                margin: 1.5rem 0 0.55rem;
+                padding-bottom: 0.25rem;
+                border-bottom: 1px solid var(--line);
+                font-size: 0.95rem;
+            }
+
+            .main p {
+                margin: 0 0 0.9rem;
+            }
+
+            .cv-card {
+                margin: 0;
+                padding: 0.75rem;
+                border: 1px solid var(--line);
+                border-left: 4px solid var(--darkbg);
+                background: var(--sidebar);
+            }
+
+            .cv-card p:last-child {
+                margin-bottom: 0;
+            }
+
+            .cv-actions {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .cv-link {
+                display: inline-block;
+                padding: 0.4rem 0.65rem;
+                background: var(--darkbg);
+                color: #fff;
+                text-decoration: none;
+            }
+
+            .cv-link:hover,
+            .cv-link:focus-visible {
+                background: var(--darkbg-hover);
+                color: #fff;
+            }
+
+            .welcome-art .cv-link {
+                display: block;
+                margin-top: 0.35rem;
+                padding: 0.3rem 0.4rem;
+                font-size: 0.72rem;
+                text-align: center;
+            }
+
+            .welcome {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 165px;
+                gap: 1.5rem;
+                align-items: start;
+            }
+
+            .welcome-art {
+                width: 165px;
+                margin: 0;
+                padding: 0.35rem;
+                border: 3px solid var(--darkbg);
+                background: var(--lightbg);
+            }
+
+            .welcome-art img {
+                display: block;
+                width: 100%;
+                height: auto;
+                filter: grayscale(1);
+            }
+
+            .welcome-art figcaption {
+                padding-top: 0.25rem;
+                color: #3d4641;
+                font-family: "Courier New", Courier, monospace;
+                font-size: 0.68rem;
+                text-align: center;
+            }
+
+            .intro-copy {
+                max-width: 700px;
+            }
+
+            .intro-copy strong {
+                color: #3d4641;
+            }
+
+            .notice {
+                margin: 1.2rem 0;
+                padding: 0.55rem 0.7rem;
+                border-top: 1px solid var(--line);
+                border-bottom: 1px solid var(--line);
+                background: var(--sidebar);
+                color: var(--muted);
+                font-size: 0.84rem;
+            }
+
+            .directory-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.86rem;
+            }
+
+            .directory-table th {
+                padding: 0.4rem 0.5rem;
+                background: var(--lightbg);
+                color: #3d4641;
+                font-weight: bold;
+                text-align: left;
+            }
+
+            .directory-table td {
+                padding: 0.6rem 0.5rem;
+                border-bottom: 1px solid var(--line);
+                vertical-align: top;
+            }
+
+            .directory-table tr:nth-child(even) td {
+                background: #fafafa;
+            }
+
+            .directory-table td:first-child {
+                width: 23%;
+                font-weight: bold;
+                white-space: nowrap;
+            }
+
+            .directory-table ul {
+                margin: 0.25rem 0 0;
+                padding-left: 1.15rem;
+            }
+
+            .directory-table li {
+                margin: 0.18rem 0;
+            }
+
+            .news-list {
+                margin: 0;
+                padding-left: 1.2rem;
+            }
+
+            .news-list li {
+                margin: 0.45rem 0;
+            }
+
+            .date {
+                color: var(--muted);
+                font-size: 0.78rem;
+                font-style: italic;
+            }
+
+            .contact-box {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.4rem 1.5rem;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+                font-size: 0.84rem;
+            }
+
+            .contact-box strong {
+                display: inline-block;
+                min-width: 4.7rem;
+                color: var(--muted);
+                font-weight: bold;
+            }
+
+            .contact-box li {
+                overflow-wrap: anywhere;
+            }
+
+            .footer {
+                padding: 0.75rem 1rem;
+                border-top: 1px solid var(--line);
+                background: var(--lightbg);
+                color: var(--muted);
+                font-size: 0.75rem;
+                text-align: center;
+            }
+
+            .footer p {
+                margin: 0.15rem 0;
+            }
+
+            @media (max-width: 650px) {
+                body {
+                    overflow-x: hidden;
+                    font-size: 16px;
+                }
+
+                .header-main {
+                    min-height: 68px;
+                    padding: 0.75rem;
+                }
+
+                .header-main h1 {
+                    font-size: clamp(1.15rem, 6vw, 1.45rem);
+                }
+
+                .header-main p {
+                    max-width: 24rem;
+                    font-size: 0.75rem;
+                }
+
+                .body-layout {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .sidebar {
+                    order: 2;
+                    min-height: 0;
+                    border-top: 3px solid var(--darkbg);
+                    border-right: 0;
+                    border-bottom: 0;
+                }
+
+                .main {
+                    order: 1;
+                }
+
+                .sidebar-section {
+                    display: block;
+                    width: auto;
+                    margin: 0;
+                    padding: 0.7rem 0;
+                    border-bottom: 3px solid var(--darkbg);
+                }
+
+                .sidebar-section:first-child {
+                    padding-top: 0;
+                }
+
+                .main {
+                    padding: 1rem clamp(0.85rem, 4vw, 1.5rem) 2rem;
+                }
+
+                .welcome {
+                    display: block;
+                }
+
+                .welcome-art {
+                    width: min(165px, 100%);
+                    margin-top: 1rem;
+                }
+
+                .cv-actions {
+                    align-items: flex-start;
+                }
+
+                .directory-table,
+                .directory-table thead,
+                .directory-table tbody,
+                .directory-table tr,
+                .directory-table th,
+                .directory-table td {
+                    display: block;
+                }
+
+                .directory-table thead {
+                    display: none;
+                }
+
+                .directory-table tr {
+                    margin-bottom: 0.7rem;
+                    border: 1px solid var(--line);
+                }
+
+                .directory-table td {
+                    border-bottom: 0;
+                }
+
+                .directory-table td:first-child {
+                    width: auto;
+                    padding-bottom: 0.15rem;
+                    background: var(--lightbg);
+                    white-space: normal;
+                }
+
+                .contact-box {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <a class="skip-link" href="#content">Skip to content</a>
+        <div class="page">
+            <header aria-label="Site header">
+                <div class="header-bars"></div>
+                <div class="header-main">
+                    <div>
+                        <h1><a href="./">λ uidops</a></h1>
+                        <p>systems programming · computing research · small useful tools</p>
+                    </div>
+                </div>
+                <div class="header-rule"></div>
+            </header>
+
+            <div class="body-layout">
+                <aside class="sidebar" aria-label="Page navigation">
+                    <section class="sidebar-section">
+                        <p><small>not logged in (<a href="#contact">contact</a>)</small></p>
+                        <ul>
+                            <li><a class="active" href="./">Home</a></li>
+                            <li><a href="#directories">Directory map</a></li>
+                            <li><a href="#about">About uidops</a></li>
+                            <li><a href="#cv">CV</a></li>
+                            <li><a href="#news">Recent notes</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                        </ul>
+                    </section>
+
+                    <section class="sidebar-section">
+                        <p class="sidebar-title">Projects</p>
+                        <ul>
+                            <li><a href="https://github.com/uidops/dolme">Dolme Language</a></li>
+                            <li><a href="https://github.com/uidops/sucktus">SUCKTUS</a></li>
+                            <li><a href="https://github.com/uidops/libc-in-riscv64">LIBC in RISCV64</a></li>
+                            <li><a href="https://github.com/uidops/DIVAN-LM">DIVAN-LM</a></li>
+                            <li><a href="https://github.com/uidops/Limit-Order-Book">LOB Classification</a></li>
+                            <li><a href="https://github.com/uidops?tab=repositories">All repositories</a></li>
+                        </ul>
+                    </section>
+                </aside>
+
+                <main id="content" class="main">
+                    <section id="about" aria-labelledby="about-heading">
+                        <div class="welcome">
+                            <div class="intro-copy">
+                                <h2 id="about-heading">welcome home : uidops online</h2>
+                                <p>
+                                    This is a personal index of systems programming,
+                                    computing research, useful tools, and small web
+                                    experiments.
+                                </p>
+                                <p>
+                                    The work here moves between C, ASM, Python, Lisp, and
+                                    Haskell, with interests in POSIX, 80386, RISC-V, MIPS,
+                                    logic, formal verification, functional programming,
+                                    operating systems, and networks.
+                                </p>
+                            </div>
+                            <figure class="welcome-art">
+                                <img src="img/07fe13d20f.gif" alt="Animated uidops artwork" />
+                                <figcaption>and live in cpu</figcaption>
+                                <a class="cv-link" href="cv.pdf" target="_blank" rel="noopener">GET CV</a>
+                            </figure>
+                        </div>
+                    </section>
+
+                    <section id="directories" aria-labelledby="directories-heading">
+                        <h3 id="directories-heading">Directory map</h3>
+                        <table class="directory-table">
+                            <thead>
+                                <tr>
+                                    <th>Directory</th>
+                                    <th>Contents</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><a href="#">/tools</a></td>
+                                    <td>
+                                        Interactive simulations and analysis labs.
+                                        <ul>
+                                            <li><a href="tools/zipf-heap.html">Zipf &amp; Heap text analyzer</a></li>
+                                            <li><a href="tools/monte-carlo-pi/index.html">Monte Carlo π estimation</a></li>
+                                            <li><a href="tools/middle-3term-random/index.html">3-term middle-product RNG</a></li>
+                                            <li><a href="tools/routing-lab/index.html">Network routing simulator</a></li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><a href="blog/index.html">/blog</a></td>
+                                    <td>
+                                        Technical writing and mathematical notes.
+                                        <ul>
+                                            <li><a href="blog/posts/zp_zp_field.html">Zp × Zp Field</a></li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+
+                    <section id="news" aria-labelledby="news-heading">
+                        <h3 id="news-heading">Recent notes</h3>
+                        <ul class="news-list">
+                            <li>
+                                <strong>Experiments online</strong><br />
+                                <span class="date">ongoing</span> — New browser tools and
+                                small systems experiments are collected as they become usable.
+                            </li>
+                            <li>
+                                <strong>Current interests</strong><br />
+                                <span class="date">always</span> — low-level software, logic,
+                                verification, networks, and functional programming.
+                            </li>
+                        </ul>
+                    </section>
+
+                    <section id="contact" aria-labelledby="contact-heading">
+                        <h3 id="contact-heading">Contact</h3>
+                        <ul class="contact-box">
+                            <li><strong>Telegram</strong> <a href="https://t.me/sys_call">@sys_call</a></li>
+                            <li><strong>Matrix</strong> @sys_call:matrix.com</li>
+                            <li><strong>Mastodon</strong> @uidops@discuss.systems</li>
+                            <li><strong>Mail</strong> <a href="mailto:uidops@cock.li">uidops@cock.li</a> - <a href="mailto:uidopsu@gmail.com">uidopsu@gmail.com</a></li>
+                            <li><strong>GitHub</strong> <a href="https://github.com/uidops">uidops</a></li>
+                            <li><strong>PGP</strong> <a href="https://pgp.mit.edu/pks/lookup?op=get&amp;search=0x4446027AF2E02256">0x4446027AF2E02256</a></li>
+                        </ul>
+                    </section>
+                </main>
+            </div>
+
+            <footer class="footer">
+                <p><a href="./">Home</a> · <a href="#directories">Directory map</a> · <a href="#contact">Contact</a></p>
+            </footer>
+        </div>
+    </body>
 </html>
