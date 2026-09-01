@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beta-Reduction Visualizer</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar"><div class="brand"><span class="lambda">λ</span><div><h1>Beta-Reduction Visualizer</h1><p>SUBSTITUTION · EVALUATION · NORMAL FORMS</p></div></div><div class="top-actions"><button id="theme-toggle">Light mode</button></div></header>
+<main class="workspace">
+<aside class="sidebar">
+<section class="intro"><div class="eyebrow">LAMBDA CALCULUS LAB</div><h2>Watch terms<br>become values.</h2><p>Reduce a lambda term one beta step at a time. The machine performs capture-avoiding substitution and keeps every intermediate form.</p><div class="formula">(λx. x) y <b>→ᵦ</b> y</div></section>
+<section><div class="section-title">EXAMPLES <span>05</span></div><div class="examples"><button class="example active" data-term="(λx. x) y"><b>Identity</b><small>(λx. x) y</small><i>↗</i></button><button class="example" data-term="(λx. λy. x) a b"><b>Constant function</b><small>(λx. λy. x) a b</small><i>↗</i></button><button class="example" data-term="(λx. x x) (λx. x x)"><b>Omega</b><small>(λx. x x) (λx. x x)</small><i>↗</i></button><button class="example" data-term="(λf. λx. f x) g"><b>Eta-shaped term</b><small>(λf. λx. f x) g</small><i>↗</i></button><button class="example" data-term="(λx. λy. x y) (λz. z) a"><b>Nested application</b><small>(λx. λy. x y) (λz. z) a</small><i>↗</i></button></div></section>
+<section class="reference"><div class="section-title">REDUCTION RULES</div><div class="rule"><b>β</b><span>(λx. M) N → M[x := N]<small>substitute N for x in M</small></span></div><div class="rule"><b>α</b><span>λx. M ≡ λy. M[x := y]<small>rename bound variables</small></span></div><div class="rule"><b>→</b><span>normal order<small>leftmost outermost first</small></span></div></section>
+</aside>
+<section class="main"><div class="heading"><div><div class="breadcrumb">TOOLS / COMPUTATION / <strong>BETA-REDUCTION</strong></div><h2>Reduction workspace</h2></div><div class="shortcut">STEP <kbd>SPACE</kbd></div></div>
+<div class="controls panel"><div class="section-title">INPUT TERM</div><div class="input-wrap"><span>λ</span><input id="term" value="(λx. x) y" spellcheck="false"><button id="clear">×</button></div><div class="control-row"><label>STRATEGY<select id="strategy"><option value="normal">Normal order</option><option value="applicative">Applicative order</option></select></label><label class="check-label"><input type="checkbox" id="alpha" checked> show α-renaming</label><button id="reset" class="secondary">RESET</button><button id="step" class="primary">STEP <b>→</b></button><button id="run" class="run">RUN <b>▶</b></button></div></div>
+<div class="panel trace"><div class="trace-head"><div class="section-title">REDUCTION TRACE <span id="step-count">STEP 0</span></div><button id="copy">COPY TRACE</button></div><div id="trace-list" class="trace-list"></div><div id="empty" class="empty">Press <b>STEP</b> to begin the reduction.</div></div>
+<div class="bottom-grid"><div class="panel result"><div class="section-title">CURRENT TERM</div><div id="current-term" class="big-term">(λx. x) y</div><div class="result-meta"><span id="result-state">REDUCIBLE</span><span id="redex-info">1 redex found</span></div></div><div class="panel insight"><div class="section-title">INSIGHT <span>✦</span></div><p id="insight">A beta redex is an application whose left side is a lambda abstraction. Applying it means substituting the argument for the bound variable.</p><a class="insight-link" href="https://opendsa-server.cs.vt.edu/ODSA/Books/PL/html/BetaReduction.html" target="_blank" rel="noopener">Learn about substitution <span>↗</span></a></div></div>
+</section></main><footer><span>BETA-REDUCTION VISUALIZER <b>·</b> UNTYPED λ-CALCULUS</span><span>LOCAL COMPUTATION <i></i> NO DATA LEAVES YOUR BROWSER</span></footer>
+</div><script src="app.js"></script></body></html>
