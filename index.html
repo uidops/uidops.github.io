@@ -931,7 +931,7 @@
                 }
             }
 
-            .stage canvas {
+            .stage > canvas {
                 position: relative;
                 z-index: 1;
                 display: block;
@@ -941,8 +941,48 @@
                 transition: opacity 0.9s ease;
             }
 
-            .stage.ready canvas {
+            .stage.ready > canvas {
                 opacity: 1;
+            }
+
+            /* GitHub contribution calendar — a faint band floating behind the
+               model. Data is a committed snapshot (scripts/update-contributions.py,
+               refreshed weekly by CI) because github.com sends no CORS headers. */
+            .contrib-bg {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                /* bleeds past the stage like the glow, but never past the
+                   viewport — .hero-main clips the overflow */
+                width: min(122%, 960px);
+                transform: translate(-50%, -50%);
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 1.2s ease 0.35s;
+                /* dissolve both ends of the band into the ambient glow */
+                -webkit-mask-image: linear-gradient(
+                    90deg,
+                    transparent,
+                    #000 18%,
+                    #000 82%,
+                    transparent
+                );
+                mask-image: linear-gradient(
+                    90deg,
+                    transparent,
+                    #000 18%,
+                    #000 82%,
+                    transparent
+                );
+            }
+
+            .contrib-bg.in {
+                opacity: 0.5;
+            }
+
+            .contrib-bg canvas {
+                display: block;
             }
 
             .stage-tag {
@@ -2029,6 +2069,13 @@
 
                         <!-- 3D stage -->
                         <div class="stage" id="stage">
+                            <div
+                                class="contrib-bg"
+                                role="img"
+                                aria-label="GitHub contribution calendar"
+                            >
+                                <canvas id="contribCanvas"></canvas>
+                            </div>
                             <canvas
                                 id="chipCanvas"
                                 aria-label="Rotating 3D retro computer model"
@@ -2039,9 +2086,6 @@
                                     ><i></i>
                                 </div>
                             </div>
-                            <span class="stage-tag"
-                                ><i></i>3d · retro computer · live render</span
-                            >
                         </div>
 
                         <!-- copy -->
@@ -2801,6 +2845,151 @@
                     },
                     { passive: true }
                 );
+            })();
+        </script>
+
+        <!-- GitHub contribution calendar: faint backdrop behind the 3D stage.
+             data/contributions.js is a committed snapshot (github.com sends no
+             CORS headers, so the browser can't fetch the real graph live);
+             scripts/update-contributions.py regenerates it, and
+             .github/workflows/update-contributions.yml runs that weekly.
+             Pure 2D canvas — it draws even when WebGL/three.js are unavailable. -->
+        <script src="data/contributions.js"></script>
+        <script>
+            (function () {
+                "use strict";
+                var data = window.__UIDOPS_CONTRIB;
+                var wrap = document.querySelector(".contrib-bg");
+                var cv = document.getElementById("contribCanvas");
+                if (!data || !wrap || !cv || !cv.getContext) return;
+                var levels = String(data.levels || "");
+                if (levels.length < 56) return; /* under 8 weeks isn't a graph */
+
+                var ctx = cv.getContext("2d");
+                var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+                var COLS = Math.ceil(levels.length / 7);
+                var HUE = "90, 209, 224"; /* --accent #5ad1e0 */
+                var SHADE = [0.1, 0.24, 0.42, 0.64, 0.92];
+                var MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                var DUR = 1500; /* wipe length, ms */
+                var startMs = Date.parse(data.start + "T00:00:00Z");
+                var W = 0, H = 0, cell = 0, gap = 0, labelH = 0, labelPx = 10;
+                var wipeAt = 0, raf = 0;
+                var stageEl = document.getElementById("stage");
+
+                if (data.total) {
+                    wrap.setAttribute(
+                        "aria-label",
+                        "GitHub contribution calendar: " +
+                            Number(data.total).toLocaleString("en-US") +
+                            " contributions in the last year"
+                    );
+                }
+
+                function layout() {
+                    W = wrap.clientWidth;
+                    if (!W) return false;
+                    /* one square cell + a quarter-cell gutter per column */
+                    cell = W / (COLS + 0.25 * (COLS - 1));
+                    gap = cell * 0.25;
+                    labelPx = Math.min(12, Math.max(8, Math.round(cell * 0.78)));
+                    labelH = !isNaN(startMs) && cell >= 7 ? labelPx + 7 : 0;
+                    H = Math.round(labelH + 7 * cell + 6 * gap);
+                    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+                    cv.width = Math.round(W * dpr);
+                    cv.height = Math.round(H * dpr);
+                    cv.style.width = W + "px";
+                    cv.style.height = H + "px";
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    return true;
+                }
+
+                function progress() {
+                    if (!wipeAt) return -1;
+                    if (reduced) return 1;
+                    var p = (performance.now() - wipeAt) / DUR;
+                    return p < 1 ? p : 1;
+                }
+
+                function draw(p) {
+                    ctx.clearRect(0, 0, W, H);
+                    if (labelH) {
+                        ctx.font =
+                            labelPx +
+                            "px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+                        ctx.textBaseline = "alphabetic";
+                        ctx.fillStyle = "rgba(176, 190, 197, 0.55)";
+                        var prev = -1;
+                        for (var c = 0; c < COLS; c++) {
+                            var m = new Date(startMs + c * 7 * 864e5).getUTCMonth();
+                            if (m === prev) continue;
+                            prev = m;
+                            var mx = c * (cell + gap);
+                            if (mx + labelPx * 2.4 > W) continue;
+                            ctx.fillText(MONTH[m], mx, labelH - 5);
+                        }
+                    }
+                    var rad = Math.max(1, cell * 0.18);
+                    for (var i = 0; i < levels.length; i++) {
+                        var lv = levels.charCodeAt(i) - 48;
+                        if (lv < 0 || lv > 4) continue;
+                        var col = (i / 7) | 0;
+                        var row = i % 7;
+                        var a = 1;
+                        if (p < 1) {
+                            /* sweep left to right, top row first */
+                            var t = ((col / COLS) * 0.62 + (row / 7) * 0.38) * 0.6;
+                            a = (p - t) / 0.4;
+                            if (a <= 0) continue;
+                            if (a > 1) a = 1;
+                        }
+                        var x = col * (cell + gap);
+                        var y = labelH + row * (cell + gap);
+                        ctx.globalAlpha = a;
+                        ctx.fillStyle = "rgba(" + HUE + "," + SHADE[lv] + ")";
+                        ctx.beginPath();
+                        if (ctx.roundRect) ctx.roundRect(x, y, cell, cell, rad);
+                        else ctx.rect(x, y, cell, cell);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+
+                function frame() {
+                    var p = progress();
+                    draw(p < 0 ? 0 : p);
+                    raf = p < 1 ? requestAnimationFrame(frame) : 0;
+                }
+
+                function start(tries) {
+                    if (!layout()) {
+                        if ((tries || 0) < 20)
+                            setTimeout(function () {
+                                start((tries || 0) + 1);
+                            }, 250);
+                        return;
+                    }
+                    wipeAt = performance.now();
+                    wrap.classList.add("in");
+                    if (reduced) draw(1);
+                    else if (!raf) raf = requestAnimationFrame(frame);
+                }
+
+                if (typeof ResizeObserver !== "undefined" && stageEl) {
+                    /* pre-size so the observer's first notification is a
+                       no-op, and watch the stage (not the band): resizing
+                       the watched element inside its own callback is what
+                       trips "ResizeObserver loop completed" */
+                    layout();
+                    new ResizeObserver(function () {
+                        if (!layout()) return;
+                        var p = progress();
+                        if (p >= 0) draw(p);
+                    }).observe(stageEl);
+                }
+
+                /* let the entrance curtain lift before the sweep begins */
+                setTimeout(start, 1500);
             })();
         </script>
 
